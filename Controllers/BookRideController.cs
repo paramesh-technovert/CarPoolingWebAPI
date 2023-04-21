@@ -26,7 +26,7 @@ namespace CarPoolingWebAPI.Controllers
             return await bookRideService.BookRide(bookRideRequestDTO);
         }
         [HttpGet]
-        public List<BookingDetailsDTO> GetBookedRides([FromHeader] Guid userId)
+        public List<BookedRidesDTO> GetBookedRides([FromHeader] Guid userId)
         {
             BookRideService bookRideService = new BookRideService(_dbContext);
             return bookRideService.GetBookedRides(userId);

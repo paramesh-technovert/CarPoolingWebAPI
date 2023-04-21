@@ -17,10 +17,17 @@ namespace CarPoolingWebAPI.Services
             OfferedRides offeredRides = new(_dbContext);
             return offeredRides.GetOfferedRides(id);
         }*/
-        public Task<List<OfferedRidesResponseDTO>> GetOfferedRides(Guid id)
+        public async Task<List<OfferedRidesDTO>> GetOfferedRides(Guid id)
         {
             OfferedRides offeredRides = new(_dbContext);
-            return offeredRides.GetOfferedRides(id);
+            UserDetailsService service = new UserDetailsService(_dbContext);
+            var result=await offeredRides.GetOfferedRides(id);
+            for (int i = 0; i < result.Count; i++)
+            {
+                if (result[i].Image!=null)
+                result[i].Image = service.GetImage(result[i].Image);
+            }
+            return result;
         }
         public async Task<OfferRide> OfferRide(OfferedRideDTO offeredRide)
         {
@@ -39,23 +46,16 @@ namespace CarPoolingWebAPI.Services
                 await cities.AddCity(city);
                 destinationId = await cities.GetCityID(city);
             }
-            if (sourceId == destinationId)
-            {
-                throw new Exception("Destination Can't Be same as source");
-            }
             OfferRide ride = new OfferRide()
             {
                 RideProviderId = offeredRide.RideOwnerId,
-                Distance = offeredRide.Distance,
                 Fair = offeredRide.Fair,
                 SourceId = sourceId,
                 DestinationId = destinationId,
-                Date = Convert.ToDateTime(offeredRide.Date + " " + offeredRide.Time),
+                Date = offeredRide.Date,
                 TotalSeats = offeredRide.TotalSeats
 
             };
-            offeredRide.stops.Insert(0, new StopsDTO { StopName = offeredRide.StartingStop.ToLower(), PickupTime = offeredRide.Time, PickupDate = offeredRide.Date });
-            offeredRide.stops.Add(new StopsDTO { StopName = offeredRide.EndingStop.ToLower() });
             Stops stops = new Stops(_dbContext);
             OfferedRides offeredRides = new OfferedRides(_dbContext);
             OfferRide rideDetails = await offeredRides.OfferRide(ride);
@@ -64,9 +64,9 @@ namespace CarPoolingWebAPI.Services
                 Stop stop = new Stop();
                 if (i != 0 && i != offeredRide.stops.Count() - 1)
                 {
-                    if (Convert.ToDateTime(offeredRide.stops[i].PickupDate + " " + offeredRide.stops[i].PickupTime) < Convert.ToDateTime(offeredRide.stops[i - 1].PickupDate + " " + offeredRide.stops[i - 1].PickupTime))
+                    if (offeredRide.stops[i].PickupDate  < offeredRide.stops[i - 1].PickupDate)
                     {
-                        throw new Exception("Invalid Stop Details");
+                        throw new Exception("Invalid date and time entered. Please enter valid date and time");
                     }
                 }
                 stop.RideId = rideDetails.RideId;
@@ -77,14 +77,7 @@ namespace CarPoolingWebAPI.Services
                     stop.StopId = await cities.GetCityID(offeredRide.stops[i].StopName.ToLower().Trim());
                 }
                 stop.AvailableSeats = offeredRide.TotalSeats;
-                if (i == offeredRide.stops.Count() - 1)
-                {
-                    stop.Date = Convert.ToDateTime(offeredRide.stops[i - 1].PickupDate + " " + offeredRide.stops[i - 1].PickupTime).AddHours(1);
-                }
-                else
-                {
-                    stop.Date = Convert.ToDateTime(offeredRide.stops[i].PickupDate + " " + offeredRide.stops[i].PickupTime);
-                }
+                stop.Date = offeredRide.stops[i].PickupDate;
                 await stops.AddStops(stop);
 
             }

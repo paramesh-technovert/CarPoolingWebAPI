@@ -9,10 +9,35 @@ namespace CarPoolingWebAPI.Repository
         public UserDetails(CarPoolingDbContext dbContext) { 
             _dbcontext = dbContext;
         }
-        public async Task AddUserDetails(UserDetail userDetails)
+        public async Task<UserDetail> AddUserDetails(UserDetail userDetails)
         {
-            await _dbcontext.UserDetails.AddAsync(userDetails);
-            await _dbcontext.SaveChangesAsync();
+            UserDetail ?user=_dbcontext.UserDetails.FirstOrDefault(e=>e.Id == userDetails.Id);
+            if (user != null)
+            {
+                user.FirstName = userDetails.FirstName;
+                user.LastName = userDetails.LastName;
+                user.PhoneNumber = userDetails.PhoneNumber;
+                user.ImageUrl = userDetails.ImageUrl;
+                _dbcontext.UserDetails.Attach(user);
+                await _dbcontext.SaveChangesAsync();
+                return user;
+            }
+            else
+            {
+                _dbcontext.UserDetails.Add(userDetails);
+                await _dbcontext.SaveChangesAsync();
+                return userDetails;
+            }
+
+        }
+        public async Task<UserDetail> GetUserDetails(Guid id)
+        {
+            var result=_dbcontext.UserDetails.FirstOrDefault(e=>e.Id == id);
+            if (result != null)
+            {
+                return result;
+            }
+            return null;
         }
     }
 }

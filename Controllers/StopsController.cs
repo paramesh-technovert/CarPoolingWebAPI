@@ -16,14 +16,8 @@ namespace CarPoolingWebAPI.Controllers
         }
 
         [HttpPost]
-        public Task<IQueryable<MatchedRidesResponseDTO>> GetMatchedRides([FromQuery] string BoardingPoint, [FromQuery] string Destination, [FromQuery] string date, [FromQuery] string time)
+        public Task<List<MatchedRidesResponseDTO>> GetMatchedRides([FromBody] MatchedRidesRequestDTO matchedRidesRequestDTO)
         {
-            MatchedRidesRequestDTO matchedRidesRequestDTO = new MatchedRidesRequestDTO
-            {
-                BoardingPoint = BoardingPoint,
-                Destination = Destination,
-                Date = Convert.ToDateTime(date + " " + time)
-            };
             StopsService service = new StopsService(_dbContext);
             return service.GetMatchedRides(matchedRidesRequestDTO);
         }
