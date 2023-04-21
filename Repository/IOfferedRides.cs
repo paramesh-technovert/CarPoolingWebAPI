@@ -8,6 +8,6 @@ namespace CarPoolingWebAPI.Repository
         public Task<OfferRide> GetRideDetails(int RideId);
         public Task<OfferRide> OfferRide(OfferRide offeredRide);
         //public Task<List<OfferRide>> GetOfferedRides(Guid id);
-        public Task<List<OfferedRidesResponseDTO>> GetOfferedRides(Guid id);
+        public Task<List<OfferedRidesDTO>> GetOfferedRides(Guid id);
     }
 }

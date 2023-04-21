@@ -17,18 +17,32 @@ namespace CarPoolingWebAPI.Controllers
         }
         [HttpPost]
         [Route("SignUp")]
-        public async Task<LoginDetail?> AddUser([FromBody] LoginCredentialsDTO loginCredential)
+        public async Task<ActionResult<LoginDetail?>> AddUser([FromBody] LoginCredentialsDTO loginCredential)
         {
-            LoginService loginService = new LoginService(_dbContext);
-            return await loginService.AddUser(loginCredential);
-
+            LoginService loginService;
+            try
+            {
+                loginService = new LoginService(_dbContext);
+                return Ok(await loginService.AddUser(loginCredential));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         [HttpPost]
         [Route("SignIn")]
-        public async Task<LoginCredentialsDTO?> GetUserDetails([FromHeader] string email, [FromHeader] string password)
+        public async Task<ActionResult<LoginCredentialsResponseDTO?>> GetUserDetails([FromBody] LoginCredentialsDTO loginCredentialsDTO)
         {
             LoginService loginService = new LoginService(_dbContext);
-            return await loginService.GetUserDetails(email, password);
+            try
+            {
+                return await loginService.GetUserDetails(loginCredentialsDTO);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

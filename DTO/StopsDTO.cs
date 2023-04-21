@@ -4,7 +4,6 @@
     {
         public string StopName { get; set; }
 
-        public string PickupDate { get; set; }
-        public string PickupTime { get; set; }
+        public DateTime PickupDate { get; set; }
     }
 }

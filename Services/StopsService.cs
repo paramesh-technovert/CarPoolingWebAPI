@@ -11,10 +11,16 @@ namespace CarPoolingWebAPI.Services
         {
             _dbContext = dbContext;
         }
-        public async Task<IQueryable<MatchedRidesResponseDTO>> GetMatchedRides(MatchedRidesRequestDTO matchedRidesRequestDTO)
+        public async Task<List<MatchedRidesResponseDTO>> GetMatchedRides(MatchedRidesRequestDTO matchedRidesRequestDTO)
         {
             Stops stops = new Stops(_dbContext);
-            return await stops.GetMatchedRides(matchedRidesRequestDTO);
+            UserDetailsService userDetailsService = new UserDetailsService(_dbContext);
+            var result= (await stops.GetMatchedRides(matchedRidesRequestDTO)).Where(e=>e.AvailableSeats>=matchedRidesRequestDTO.SeatsRequired).ToList();
+            for(int i=0; i<result.Count; i++)
+            {
+                result[i].Image = userDetailsService.GetImage(result[i].Image);
+            }
+            return result;
         }
 
 

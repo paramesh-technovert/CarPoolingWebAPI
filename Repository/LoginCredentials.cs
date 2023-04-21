@@ -27,11 +27,7 @@ namespace CarPoolingWebAPI.Repository
 
         public async Task<LoginDetail> GetUserDetails(string EmailId)
         {
-            LoginDetail credential=_dbContext.LoginDetails.FirstOrDefault(x=>x.Email==EmailId)!;
-            if (credential == null)
-            {
-                return null;
-            }
+            LoginDetail credential=_dbContext.LoginDetails.FirstOrDefault(x=>x.Email.ToLower()==EmailId.ToLower());
             return credential;
         }
     }
