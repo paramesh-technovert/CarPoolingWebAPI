@@ -26,7 +26,7 @@ namespace CarPoolingWebAPI.Controllers
         }*/
         [HttpGet]
         [Route("OfferedRides")]
-        public async Task<List<OfferedRidesResponseDTO>> GetRide([FromHeader] Guid Id)
+        public async Task<List<OfferedRidesDTO>> GetRide([FromHeader] Guid Id)
         {
             OfferedRideService offeredRideService = new(_dbContext);
             return await offeredRideService.GetOfferedRides(Id);

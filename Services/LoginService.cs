@@ -2,6 +2,7 @@
 using CarPoolingWebAPI.DTO;
 using CarPoolingWebAPI.Models;
 using CarPoolingWebAPI.Repository;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CarPoolingWebAPI.Services
@@ -13,39 +14,26 @@ namespace CarPoolingWebAPI.Services
         {
             _dbContext = dbContext;
         }
-        private bool IsValidMail(string email)
+        private string EncryptData(string password)
         {
-            return Regex.IsMatch(email, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
+            byte[] encode = new byte[password.Length];
+            encode=Encoding.UTF8.GetBytes(password);
+            return Convert.ToBase64String(encode);
         }
-        private bool IsValidPassword(string password)
+        public async Task<LoginCredentialsResponseDTO?> GetUserDetails(LoginCredentialsDTO loginCredentialsDTO)
         {
-            if (password == null)
-            {
-                throw new ArgumentNullException("password");
-            }
-            if (password.Length > 7 && password.Length < 26)
-            {
-                return true;
-            }
-            return false;
-        }
-        public async Task<LoginCredentialsDTO?> GetUserDetails(string email, string password)
-        {
-            if (email == null)
-            {
-                throw new ArgumentNullException("email");
-            }
             LoginCredentials loginCredentials = new LoginCredentials(_dbContext);
-            LoginDetail credential = await loginCredentials.GetUserDetails(email);
+            LoginDetail credential = await loginCredentials.GetUserDetails(loginCredentialsDTO.EmailId);
             if (credential != null)
             {
-                if (credential.Password == password)
+                if (credential.Password == EncryptData(loginCredentialsDTO.Password))
                 {
-                    LoginCredentialsDTO obj = new LoginCredentialsDTO
+                    
+                    LoginCredentialsResponseDTO obj = new LoginCredentialsResponseDTO
                     {
                         UserId = credential.Id,
                         EmailId = credential.Email,
-                        Password = credential.Password
+                        Password = loginCredentialsDTO.Password
                     };
                     return obj;
                 }
@@ -64,35 +52,22 @@ namespace CarPoolingWebAPI.Services
             }
             if (_dbContext.LoginDetails.FirstOrDefault(e => e.Email == loginCredential.EmailId) == null)
             {
-                if (IsValidMail(loginCredential.EmailId))
+                loginCredential.Password=EncryptData(loginCredential.Password);
+                LoginCredentials loginCredentials = new(_dbContext);
+                LoginDetail credential = new LoginDetail
                 {
-                    if (IsValidPassword(loginCredential.Password))
-                    {
-                        LoginCredentials loginCredentials = new(_dbContext);
-                        LoginDetail credential = new LoginDetail
-                        {
 
-                            Email = loginCredential.EmailId,
-                            Password = loginCredential.Password
-                        };
-                        LoginDetail details = await loginCredentials.AddUser(credential);
-                        if (details != null)
-                        {
-                            UserDetail userDetail = new UserDetail { Id = details.Id };
-                            UserDetails userDetails = new UserDetails(_dbContext);
-                            userDetails.AddUserDetails(userDetail);
-                        }
-                        return details;
-                    }
-                    else
-                    {
-                        throw new Exception("Invalid Password!Password length must be a minimum of 8 and a maximum of 25");
-                    }
-                }
-                else
+                    Email = loginCredential.EmailId.ToLower(),
+                    Password = loginCredential.Password
+                };
+                LoginDetail details = await loginCredentials.AddUser(credential);
+                if (details != null)
                 {
-                    throw new Exception("Invalid Mail Id");
+                    UserDetailsService userDetailsService = new UserDetailsService(_dbContext);
+                    UserDetailsRequestDTO detailsRequestDTO=new UserDetailsRequestDTO { Id=details.Id,FirstName="New",LastName="User",ImageUrl=""};
+                    await userDetailsService.AddUser(detailsRequestDTO);
                 }
+                return await loginCredentials.GetUserDetails(details.Email);
             }
             else
             {

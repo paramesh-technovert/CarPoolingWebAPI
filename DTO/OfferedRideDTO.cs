@@ -10,10 +10,7 @@ namespace CarPoolingWebAPI.DTO
 
         public String EndingStop { get; set; }
 
-        public string Date { get; set; }
-        public string Time { get; set; }
-
-        public int Distance { get; set; }
+        public DateTime Date { get; set; }
 
         public int Fair { get; set; }
 

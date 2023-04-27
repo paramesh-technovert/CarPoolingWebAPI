@@ -1,6 +1,8 @@
 using CarPoolingWebAPI.Context;
 using CarPoolingWebAPI.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Web.Http;
+using System.Web.Http.Cors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +25,13 @@ builder.Services.AddScoped<IStops, Stops>();
 builder.Services.AddScoped<IBookRides, BookRides>();
 
 var app = builder.Build();
-
+app.UseCors(builder =>
+{
+    builder
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader();
+});
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -36,5 +44,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

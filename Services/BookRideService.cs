@@ -37,14 +37,27 @@ namespace CarPoolingWebAPI.Services
                 DroppingPoint = cities.GetCityName(bookingRideRequestDTO.DestinationStopId)
             };
             BookRides bookRides = new BookRides(_dbContext);
-            bookRides.BookRide(bookingRideRequestDTO, offerRide.Fair);
+            try
+            {
+                bookRides.BookRide(bookingRideRequestDTO, offerRide.Fair);
+                _dbContext.SaveChanges();
+            }catch (Exception ex)
+            {
+                throw new Exception("Couldn't Book a ride Please Try Again");
+            }
             return bookingDetailsDTO;
         }
-        public List<BookingDetailsDTO> GetBookedRides(Guid userId)
+        public List<BookedRidesDTO> GetBookedRides(Guid userId)
         {
-            Cities cities = new Cities(_dbContext);
+            UserDetailsService userDetailsService = new UserDetailsService(_dbContext);
             BookRides bookRides = new BookRides(_dbContext);
-            return bookRides.GetBookedRides(userId).ToList();
+            var result=bookRides.GetBookedRides(userId).ToList();
+            for (int i = 0; i < result.Count; i++)
+            {
+                if (result[i].Image != null)
+                    result[i].Image = userDetailsService.GetImage(result[i].Image);
+            }
+            return result.ToList();
         }
         /*public List<BookingDetailsDTO> GetBookedRides(Guid userId)
         {
