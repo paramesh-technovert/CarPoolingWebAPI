@@ -32,7 +32,7 @@ namespace CarPoolingWebAPI.Repository
             }
         }
 
-        public void BookingRide(BookRideRequestDTO bookRideRequestDTO)
+        public void BookingRide(BookRideRequestDBO bookRideRequestDTO)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace CarPoolingWebAPI.Repository
             }
         }
 
-        public async Task<List<MatchedRidesResponseDTO>> GetMatchedRides(MatchedRidesRequestDTO matchedRidesRequestDTO)
+        public async Task<List<MatchedRidesResponseDBO>> GetMatchedRides(MatchedRidesRequestDBO matchedRidesRequestDTO)
         {
             Cities cities = new Cities(_dbContext);
 
@@ -76,7 +76,7 @@ namespace CarPoolingWebAPI.Repository
                     ).GroupBy(
                         x => x.s.RideId
                     ).Select(
-                        g => new MatchedRidesResponseDTO
+                        g => new MatchedRidesResponseDBO
                         {
                             RideId = g.Key,
                             AvailableSeats = g.Min(x => x.s.AvailableSeats),
@@ -88,7 +88,7 @@ namespace CarPoolingWebAPI.Repository
             return (from i in (from o in _dbContext.OfferRides
                    join u in _dbContext.UserDetails on o.RideProviderId equals u.Id where u.Id!=matchedRidesRequestDTO.Id select new { RideProviderId=u.Id,RideProviderName = u.FirstName.Trim() + " " + u.LastName.Trim(), Price = o.Fair,RideId=o.RideId,Image=u.ImageUrl })
                    join r in result on i.RideId equals r.RideId
-                   select new MatchedRidesResponseDTO
+                   select new MatchedRidesResponseDBO
                    {
                        Id = i.RideProviderId,
                        RideProviderName = i.RideProviderName,

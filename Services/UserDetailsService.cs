@@ -1,4 +1,5 @@
-﻿using CarPoolingWebAPI.Context;
+﻿using AutoMapper;
+using CarPoolingWebAPI.Context;
 using CarPoolingWebAPI.DTO;
 using CarPoolingWebAPI.Models;
 using CarPoolingWebAPI.Repository;
@@ -8,9 +9,11 @@ namespace CarPoolingWebAPI.Services
     public class UserDetailsService
     {
         private readonly CarPoolingDbContext _dbContext;
-        public UserDetailsService(CarPoolingDbContext dbContext) : base()
+        private readonly IMapper _mapper;
+        public UserDetailsService(CarPoolingDbContext dbContext,IMapper mapper) : base()
         {
             _dbContext = dbContext;
+            _mapper=mapper;
         }
         public async Task<UserDetailsRequestDTO> AddUser(UserDetailsRequestDTO userDetailsRequestDTO)
         {
